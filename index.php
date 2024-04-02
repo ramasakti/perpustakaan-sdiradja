@@ -10,6 +10,17 @@ if (isset($_GET['tanggal'])) {
     $dataJumlahPeminjaman = mysqli_query($koneksi, "SELECT COUNT(anggota.`No Anggota`) AS jumlah_peminjaman FROM sir_bk_u JOIN anggota ON anggota.`No Anggota` = sir_bk_u.`No Anggota` WHERE sir_bk_u.`Tgl Pinjam` = '$tanggal'");
     $jumlahPeminjaman = mysqli_fetch_array($dataJumlahPeminjaman);
     
+    $dataKelas = mysqli_query($koneksi, "SELECT DISTINCT organisasi.NAMA, organisasi.KODE
+    FROM organisasi JOIN anggota ON anggota.Organisasi = organisasi.KODE
+    WHERE organisasi.NAMA LIKE '%KELAS%'
+    ORDER BY organisasi.KODE;
+    ");
+    $allKelas = array();
+
+    while ($data = mysqli_fetch_array($dataKelas)) {
+        $allKelas[] = $data['NAMA'];
+    }
+
     $dataKelasPeminjam = mysqli_query($koneksi, "SELECT DISTINCT anggota.Organisasi AS kelas FROM sir_bk_u JOIN anggota ON anggota.`No Anggota` = sir_bk_u.`No Anggota` WHERE sir_bk_u.`Tgl Pinjam` = '$tanggal' ORDER BY anggota.Organisasi");
     $kelasPeminjam = array();
 
@@ -105,8 +116,46 @@ if (isset($_GET['tanggal'])) {
                             <p>Laporan Harian Peminjaman Buku</p>
                             <p>*<?= date_format($tanggalObj, 'l, d F Y'); ?>*</p>
                                 <?php
-                                    for ($i=0; $i < count($kelasPeminjam); $i++) {
-                                        echo "$kelasPeminjam[$i]<br/>";
+                                    // Array untuk menyimpan jenjang
+                                    $jenjang = array("1", "2", "3", "4", "5", "6");
+                                    
+                                    // Looping untuk setiap jenjang
+                                    foreach ($jenjang as $j) {
+                                      echo "<br><h3>JENJANG $j</h3>";
+                                    
+                                      // Filter array kelas berdasarkan jenjang
+                                      $kelasJenjang = array_filter($allKelas, function($kelas) use ($j) {
+                                        return preg_match("/^KELAS $j/", $kelas);
+                                      });
+                                    
+                                      // Hitung jumlah kolom
+                                      $jumlahKolom = 4;
+                                    
+                                      // Inisialisasi variabel untuk baris
+                                      $baris = 1;
+                                    
+                                      echo "<table border='1' cellpadding='5' cellspacing='0'>";
+                                      foreach ($kelasJenjang as $kelas) {
+                                        if ($baris == 1) {
+                                          echo "<tr>";
+                                        }
+                                    
+                                        echo "<td>$kelas " . (in_array($kelas, $kelasPeminjam) ? "✅" : "❌") . "</td>";
+                                    
+                                        if ($baris % $jumlahKolom == 0) {
+                                          echo "</tr>";
+                                          $baris = 1;
+                                        } else {
+                                          $baris++;
+                                        }
+                                      }
+                                    
+                                      // Tutup tabel jika baris tidak genap
+                                      if ($baris != 1) {
+                                        echo "</tr>";
+                                      }
+                                    
+                                      echo "</table>";
                                     }
                                 ?>
                             <p class="mt-3">*<?= $jumlahPeminjaman[0] ?> buku terpinjam*</p>
