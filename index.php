@@ -116,32 +116,29 @@ if (isset($_GET['tanggal'])) {
                             <p>Laporan Harian Peminjaman Buku</p>
                             <p>*<?= date_format($tanggalObj, 'l, d F Y'); ?>*</p>
                                 <?php
-                                    // Array untuk menyimpan jenjang
                                     $jenjang = array("1", "2", "3", "4", "5", "6");
-                                    
-                                    // Looping untuk setiap jenjang
+
                                     foreach ($jenjang as $j) {
                                       echo "<br><h3>JENJANG $j</h3>";
-                                    
-                                      // Filter array kelas berdasarkan jenjang
+                                  
                                       $kelasJenjang = array_filter($allKelas, function($kelas) use ($j) {
                                         return preg_match("/^KELAS $j/", $kelas);
                                       });
-                                    
-                                      // Hitung jumlah kolom
+                                  
                                       $jumlahKolom = 4;
-                                    
-                                      // Inisialisasi variabel untuk baris
                                       $baris = 1;
-                                    
+                                  
                                       echo "<table border='1' cellpadding='5' cellspacing='0'>";
                                       foreach ($kelasJenjang as $kelas) {
                                         if ($baris == 1) {
                                           echo "<tr>";
                                         }
-                                    
+                                  
+                                        $kelas2 = $kelas . "2";
+                                  
                                         echo "<td>$kelas " . (in_array($kelas, $kelasPeminjam) ? "✅" : "❌") . "</td>";
-                                    
+                                        echo "<td>$kelas2 " . (in_array($kelas2, $kelasPeminjam) ? "✅" : "❌") . "</td>";
+                                  
                                         if ($baris % $jumlahKolom == 0) {
                                           echo "</tr>";
                                           $baris = 1;
@@ -149,12 +146,11 @@ if (isset($_GET['tanggal'])) {
                                           $baris++;
                                         }
                                       }
-                                    
-                                      // Tutup tabel jika baris tidak genap
+                                  
                                       if ($baris != 1) {
                                         echo "</tr>";
                                       }
-                                    
+                                  
                                       echo "</table>";
                                     }
                                 ?>
